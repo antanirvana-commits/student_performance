@@ -86,5 +86,58 @@
             ],
             "roc_auc": 0.8123053199691596
         }
+    },
+    "best_regression_model": "ElasticNet Regression",
+    "regression_models": {
+        "Linear Regression": {
+            "r2_score": 0.7696495724907312,
+            "mae": 0.4523920089625977,
+            "rmse": 1.804444509272284
+        },
+        "Ridge Regression": {
+            "r2_score": 0.7696584630608467,
+            "mae": 0.4523706843381943,
+            "rmse": 1.8044096869031667
+        },
+        "Lasso Regression": {
+            "r2_score": 0.7696871447518666,
+            "mae": 0.4523686387539151,
+            "rmse": 1.8042973425709987
+        },
+        "ElasticNet Regression": {
+            "r2_score": 0.769696340479797,
+            "mae": 0.45228270081826,
+            "rmse": 1.804261322017415
+        },
+        "Random Forest Regressor": {
+            "r2_score": 0.6735385203854227,
+            "mae": 1.0726001087227364,
+            "rmse": 2.1481519206082864
+        },
+        "Gradient Boosting Regressor": {
+            "r2_score": 0.751243188426636,
+            "mae": 0.6439486521843244,
+            "rmse": 1.8751521430955354
+        },
+        "Extra Trees Regressor": {
+            "r2_score": 0.6936496630566739,
+            "mae": 1.0148767899116897,
+            "rmse": 2.080933496015423
+        },
+        "AdaBoost Regressor": {
+            "r2_score": 0.23108124301488253,
+            "mae": 2.4458776779823923,
+            "rmse": 3.2967745382231692
+        },
+        "HistGradientBoosting Regressor": {
+            "r2_score": 0.7242542973964488,
+            "mae": 0.797111284367133,
+            "rmse": 1.9742556801070321
+        },
+        "Polynomial Ridge Regression": {
+            "r2_score": 0.747207710121458,
+            "mae": 0.6409500682611442,
+            "rmse": 1.8903008591393362
+        }
     }
 }

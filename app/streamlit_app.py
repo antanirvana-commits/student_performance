@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / "data" / "raw" / "StudentPerformanceFactors.csv"
-MODEL_PATH = BASE_DIR / "artifacts" / "models" / "best_model_pipeline.joblib"
+CLASS_MODEL_PATH = BASE_DIR / "artifacts" / "models" / "best_model_pipeline.joblib"
+REG_MODEL_PATH = BASE_DIR / "artifacts" / "models" / "regression_model.joblib"
 METRICS_PATH = BASE_DIR / "artifacts" / "metrics.json"
 
 st.set_page_config(
@@ -166,9 +167,16 @@ def load_data():
 
 
 @st.cache_resource
-def load_model():
-    if MODEL_PATH.exists():
-        return joblib.load(MODEL_PATH)
+def load_classification_model():
+    if CLASS_MODEL_PATH.exists():
+        return joblib.load(CLASS_MODEL_PATH)
+    return None
+
+
+@st.cache_resource
+def load_regression_model():
+    if REG_MODEL_PATH.exists():
+        return joblib.load(REG_MODEL_PATH)
     return None
 
 
@@ -188,24 +196,19 @@ def add_target(df: pd.DataFrame) -> pd.DataFrame:
 
 def normalize_metrics(metrics_data: dict) -> dict:
     if not metrics_data:
-        return {"best_model": None, "models": {}}
-
-    if "models" in metrics_data and isinstance(metrics_data["models"], dict):
         return {
-            "best_model": metrics_data.get("best_model"),
-            "models": metrics_data["models"],
+            "best_model": None,
+            "models": {},
+            "best_regression_model": None,
+            "regression_models": {},
         }
 
-    if all(isinstance(v, dict) for v in metrics_data.values()):
-        model_names = list(metrics_data.keys())
-        best_model = model_names[0] if model_names else None
-        return {"best_model": best_model, "models": metrics_data}
-
-    if any(k in metrics_data for k in ["accuracy", "precision", "recall", "roc_auc"]):
-        best_name = metrics_data.get("best_model", "Best Model")
-        return {"best_model": best_name, "models": {best_name: metrics_data}}
-
-    return {"best_model": None, "models": {}}
+    return {
+        "best_model": metrics_data.get("best_model"),
+        "models": metrics_data.get("models", {}),
+        "best_regression_model": metrics_data.get("best_regression_model"),
+        "regression_models": metrics_data.get("regression_models", {}),
+    }
 
 
 def get_sorted_unique_values(df: pd.DataFrame, column_name: str):
@@ -214,10 +217,7 @@ def get_sorted_unique_values(df: pd.DataFrame, column_name: str):
 
 
 def show_section_title(title: str):
-    st.markdown(
-        f'<div class="section-title">{title}</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(f'<div class="section-title">{title}</div>', unsafe_allow_html=True)
 
 
 def start_card():
@@ -273,7 +273,8 @@ def plot_boxplot(df: pd.DataFrame):
 
 df = load_data()
 df = add_target(df)
-model = load_model()
+classification_model = load_classification_model()
+regression_model = load_regression_model()
 raw_metrics = load_metrics()
 metrics_bundle = normalize_metrics(raw_metrics)
 
@@ -293,7 +294,14 @@ st.markdown(
 st.sidebar.title("Navigation")
 menu = st.sidebar.radio(
     "Pilih halaman",
-    ["Home", "Dataset Overview", "EDA", "Model Performance", "Prediction"],
+    [
+        "Home",
+        "Dataset Overview",
+        "EDA",
+        "Model Performance",
+        "Regression Performance",
+        "Prediction",
+    ],
 )
 
 if menu == "Home":
@@ -311,7 +319,7 @@ if menu == "Home":
             Project ini dibangun untuk memprediksi performa siswa menggunakan beberapa algoritma
             machine learning berdasarkan faktor-faktor seperti jam belajar, kehadiran, kualitas guru,
             motivasi, dukungan keluarga, dan faktor pendukung lainnya. Sistem ini juga menyediakan
-            analisis data, perbandingan performa model, serta prediksi secara real-time.
+            analisis data, perbandingan performa model, evaluasi regresi, serta prediksi secara real-time.
         </div>
         """,
         unsafe_allow_html=True,
@@ -427,20 +435,20 @@ elif menu == "EDA":
     end_card()
 
 elif menu == "Model Performance":
-    show_section_title("Model Performance Comparison")
+    show_section_title("Classification Model Performance")
 
     models_dict = metrics_bundle.get("models", {})
     best_model_name = metrics_bundle.get("best_model")
 
     if not models_dict:
-        st.warning("Metrics model belum tersedia. Jalankan ulang training model terlebih dahulu.")
+        st.warning("Metrics klasifikasi belum tersedia. Jalankan ulang training model terlebih dahulu.")
         st.code("python -m src.train_model")
     else:
-        selected_model = st.selectbox("Pilih model", list(models_dict.keys()))
+        selected_model = st.selectbox("Pilih model klasifikasi", list(models_dict.keys()))
         selected_metrics = models_dict.get(selected_model, {})
 
         if best_model_name:
-            st.success(f"Best Model: {best_model_name}")
+            st.success(f"Best Classification Model: {best_model_name}")
 
         c1, c2, c3, c4, c5 = st.columns(5)
         c1.metric("Accuracy", f"{selected_metrics.get('accuracy', 0):.4f}")
@@ -464,12 +472,46 @@ elif menu == "Model Performance":
         end_card()
 
         start_card()
-        show_section_title("Summary")
+        show_section_title("Model Summary")
         st.markdown(
             f"""
             <div class="subtle-text">
-                Model <strong>{selected_model}</strong> dievaluasi menggunakan metrik Accuracy, Precision,
-                Recall, F1-Score, dan ROC-AUC untuk melihat kualitas klasifikasi secara menyeluruh.
+                Model <strong>{selected_model}</strong> dievaluasi menggunakan Accuracy, Precision,
+                Recall, F1-Score, dan ROC-AUC untuk menilai performa klasifikasi secara menyeluruh.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        end_card()
+
+elif menu == "Regression Performance":
+    show_section_title("Regression Model Performance")
+
+    reg_models = metrics_bundle.get("regression_models", {})
+    best_reg_name = metrics_bundle.get("best_regression_model")
+
+    if not reg_models:
+        st.warning("Metrics regresi belum tersedia. Jalankan ulang training model terlebih dahulu.")
+        st.code("python -m src.train_model")
+    else:
+        selected_reg_model = st.selectbox("Pilih model regresi", list(reg_models.keys()))
+        selected_reg_metrics = reg_models.get(selected_reg_model, {})
+
+        if best_reg_name:
+            st.success(f"Best Regression Model: {best_reg_name}")
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("R² Score", f"{selected_reg_metrics.get('r2_score', 0):.4f}")
+        c2.metric("MAE", f"{selected_reg_metrics.get('mae', 0):.4f}")
+        c3.metric("RMSE", f"{selected_reg_metrics.get('rmse', 0):.4f}")
+
+        start_card()
+        show_section_title("Regression Summary")
+        st.markdown(
+            f"""
+            <div class="subtle-text">
+                Model <strong>{selected_reg_model}</strong> dievaluasi menggunakan R² Score, MAE, dan RMSE.
+                Target penugasan adalah memperoleh R² Score minimal 0.8 dengan error sekecil mungkin.
             </div>
             """,
             unsafe_allow_html=True,
@@ -477,17 +519,22 @@ elif menu == "Model Performance":
         end_card()
 
 elif menu == "Prediction":
-    show_section_title("Predict Student Performance")
+    show_section_title("Prediction")
 
-    if model is None:
+    if classification_model is None or regression_model is None:
         st.error("Model belum tersedia. Jalankan training model terlebih dahulu.")
         st.code("python -m src.train_model")
     else:
+        prediction_type = st.selectbox(
+            "Pilih jenis prediksi",
+            ["Classification Prediction", "Regression Prediction"],
+        )
+
         start_card()
         st.markdown(
             """
             <div class="subtle-text">
-                Masukkan parameter siswa di bawah ini untuk memprediksi performa akademik secara real-time.
+                Masukkan parameter siswa di bawah ini untuk melakukan prediksi.
             </div>
             """,
             unsafe_allow_html=True,
@@ -563,26 +610,37 @@ elif menu == "Prediction":
         st.dataframe(input_df, use_container_width=True)
         end_card()
 
-        if st.button("Predict Now"):
+        if st.button("Run Prediction"):
             try:
-                pred = int(model.predict(input_df)[0])
-
-                probability = None
-                if hasattr(model, "predict_proba"):
-                    probability = float(model.predict_proba(input_df)[0][1])
-
                 start_card()
                 show_section_title("Prediction Result")
 
-                if probability is not None:
-                    st.progress(min(max(probability, 0.0), 1.0))
-                    st.write(f"Probability High Performance: **{probability:.4f}**")
+                if prediction_type == "Classification Prediction":
+                    pred = int(classification_model.predict(input_df)[0])
+
+                    probability = None
+                    if hasattr(classification_model, "predict_proba"):
+                        probability = float(classification_model.predict_proba(input_df)[0][1])
+
+                    if probability is not None:
+                        st.progress(min(max(probability, 0.0), 1.0))
+                        st.write(f"Probability High Performance: **{probability:.4f}**")
+
                     st.write(f"Predicted Class: **{pred}**")
 
-                if pred == 1:
-                    st.success("Prediction: High Performance")
+                    if pred == 1:
+                        st.success("Prediction: High Performance")
+                    else:
+                        st.error("Prediction: Low Performance")
+
                 else:
-                    st.error("Prediction: Low Performance")
+                    predicted_score = float(regression_model.predict(input_df)[0])
+                    st.metric("Predicted Exam Score", f"{predicted_score:.2f}")
+
+                    if predicted_score >= 75:
+                        st.success("Estimated Category: High Performance")
+                    else:
+                        st.error("Estimated Category: Low Performance")
 
                 end_card()
 
