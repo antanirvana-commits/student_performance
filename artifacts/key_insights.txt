@@ -1,0 +1,6 @@
+Dataset contains 6,607 rows and 20 columns.
+High Performance share (Exam_Score >= 70) = 24.60%.
+Best model is Logistic Regression with accuracy 0.979, precision 0.977, recall 0.935, ROC-AUC 0.984.
+Average Exam Score for students with attendance >= 90 is 70.14.
+Average Exam Score for students studying >= 25 hours is 69.66.
+Average Exam Score with tutoring sessions >= 4 is 68.60.

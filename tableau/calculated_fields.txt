@@ -1,0 +1,13 @@
+Tableau Calculated Fields
+
+1. Performance Category
+IF [Exam_Score] >= 70 THEN "High Performance" ELSE "Low Performance" END
+
+2. Attendance Bucket
+IF [Attendance] >= 90 THEN "Very High"
+ELSEIF [Attendance] >= 80 THEN "High"
+ELSEIF [Attendance] >= 70 THEN "Medium"
+ELSE "Low" END
+
+3. Study Intensity
+IF [Hours_Studied] >= 25 THEN "Intensive" ELSE "Regular" END

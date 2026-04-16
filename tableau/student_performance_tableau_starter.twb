@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook source-platform='linux' version='2024.2' xmlns:user='http://www.tableausoftware.com/xml/user'>
+  <preferences>
+    <preference name='ui.shelf.height' value='240' />
+  </preferences>
+  <datasources>
+    <datasource inline='true' name='student_performance_tableau_source' version='2024.2'>
+      <connection class='textscan' directory='.' filename='student_performance_tableau_source.csv' />
+      <aliases enabled='yes' />
+      <column caption='Exam Score' datatype='integer' name='[Exam_Score]' role='measure' type='quantitative' />
+      <column caption='Hours Studied' datatype='integer' name='[Hours_Studied]' role='measure' type='quantitative' />
+      <column caption='Attendance' datatype='integer' name='[Attendance]' role='measure' type='quantitative' />
+      <column caption='Performance Label' datatype='string' name='[Performance_Label]' role='dimension' type='nominal' />
+    </datasource>
+  </datasources>
+  <worksheets />
+  <dashboards />
+  <windows>
+    <window class='worksheet' maximized='true' name='Starter' source-height='800' source-width='1200'/>
+  </windows>
+</workbook>

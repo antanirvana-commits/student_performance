@@ -1,0 +1,13 @@
+feature,importance
+num__Attendance,4.777482740220351
+num__Hours_Studied,3.8136849425967654
+cat__Access_to_Resources_High,2.0671592082071033
+cat__Parental_Involvement_Low,2.027478813191449
+cat__Access_to_Resources_Low,2.0267799565879514
+cat__Parental_Involvement_High,1.9552560052446566
+num__Previous_Scores,1.4772926100235846
+num__Tutoring_Sessions,1.2358326558641366
+cat__Teacher_Quality_Low,1.203786596366533
+cat__Motivation_Level_High,1.1748213612102372
+cat__Peer_Influence_Negative,1.11506904989942
+cat__Peer_Influence_Positive,1.1124793163587778
